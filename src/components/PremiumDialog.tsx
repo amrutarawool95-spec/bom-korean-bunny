@@ -1,20 +1,24 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { setPremium } from "@/lib/premium";
-import { Sparkles, Volume2, Heart, Zap, Crown } from "lucide-react";
+import { Sparkles, Volume2, Heart, Zap, Crown, Instagram } from "lucide-react";
 import { toast } from "sonner";
+import paypalQr from "@/assets/paypal-qr.png";
+
+export const INSTAGRAM_HANDLE = "tokki_easykorean";
+export const INSTAGRAM_URL =
+  "https://www.instagram.com/tokki_easykorean?igsh=ZG04YWNqcTYzZHBo";
 
 export function PremiumDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) {
-  const handleUnlock = () => {
-    // TODO: replace with real Stripe checkout. For now, simulate purchase.
+  const handleConfirm = () => {
     setPremium(true);
     onOpenChange(false);
-    toast.success("🎉 Welcome to Bom Premium! Tap 🔊 to hear Korean.");
+    toast.success("🎉 Premium unlocked! Tap 🔊 to hear Korean.");
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md rounded-3xl border-border bg-gradient-to-br from-petal to-blossom/50">
+      <DialogContent className="max-h-[90vh] max-w-md overflow-y-auto rounded-3xl border-border bg-gradient-to-br from-petal to-blossom/50">
         <DialogHeader className="text-center">
           <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/15 text-primary">
             <Crown className="h-7 w-7" />
@@ -27,10 +31,10 @@ export function PremiumDialog({ open, onOpenChange }: { open: boolean; onOpenCha
           </DialogDescription>
         </DialogHeader>
 
-        <ul className="my-4 space-y-3 text-sm">
+        <ul className="my-4 space-y-2 text-sm">
           <li className="flex items-start gap-3 rounded-2xl bg-card/70 p-3 ring-1 ring-border">
             <Volume2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-            <span><b>Pronunciation playback</b> — tap to hear any translation in clear, native-paced Korean.</span>
+            <span><b>Pronunciation playback</b> — hear any translation in clear, native-paced Korean.</span>
           </li>
           <li className="flex items-start gap-3 rounded-2xl bg-card/70 p-3 ring-1 ring-border">
             <Sparkles className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
@@ -38,11 +42,11 @@ export function PremiumDialog({ open, onOpenChange }: { open: boolean; onOpenCha
           </li>
           <li className="flex items-start gap-3 rounded-2xl bg-card/70 p-3 ring-1 ring-border">
             <Zap className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-            <span><b>Unlimited plays</b> — replay any sentence as many times as you want, no daily limit.</span>
+            <span><b>Unlimited plays</b> — replay any sentence as many times as you want.</span>
           </li>
           <li className="flex items-start gap-3 rounded-2xl bg-card/70 p-3 ring-1 ring-border">
             <Heart className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-            <span><b>Support Bom-Bunny</b> — keep this little app sweet, ad-free, and growing.</span>
+            <span><b>Support Tokki</b> — keep this little app sweet, ad-free, and growing.</span>
           </li>
         </ul>
 
@@ -53,15 +57,44 @@ export function PremiumDialog({ open, onOpenChange }: { open: boolean; onOpenCha
           <p className="mt-1 text-xs text-muted-foreground">Less than a bubble tea. Yours forever. 🧋</p>
         </div>
 
+        <div className="mt-4 rounded-2xl bg-card p-4 ring-1 ring-border">
+          <p className="text-center font-display text-sm font-bold text-foreground">
+            Pay $2 with PayPal
+          </p>
+          <p className="mt-1 text-center text-xs text-muted-foreground">
+            Scan the QR code below to pay
+          </p>
+          <div className="mt-3 flex justify-center">
+            <img
+              src={paypalQr}
+              alt="PayPal payment QR code"
+              className="h-56 w-56 rounded-xl bg-white p-2 ring-1 ring-border"
+            />
+          </div>
+          <p className="mt-3 text-center text-xs text-foreground/80">
+            After paying, send a screenshot to{" "}
+            <a
+              href={INSTAGRAM_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 font-semibold text-primary hover:underline"
+            >
+              <Instagram className="h-3.5 w-3.5" />
+              @{INSTAGRAM_HANDLE}
+            </a>{" "}
+            on Instagram to activate Premium.
+          </p>
+        </div>
+
         <Button
-          onClick={handleUnlock}
+          onClick={handleConfirm}
           size="lg"
           className="mt-4 w-full rounded-full bg-primary font-semibold text-primary-foreground shadow-[var(--shadow-soft)] hover:bg-primary/90"
         >
-          <Crown className="mr-2 h-4 w-4" /> Unlock Premium — $2
+          <Crown className="mr-2 h-4 w-4" /> I've paid — Unlock Premium
         </Button>
         <p className="mt-2 text-center text-[11px] text-muted-foreground">
-          Secure one-time payment · No subscription · Instant access
+          One-time payment · No subscription · Instant access after DM
         </p>
       </DialogContent>
     </Dialog>

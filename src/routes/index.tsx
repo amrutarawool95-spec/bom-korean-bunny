@@ -44,8 +44,19 @@ function Index() {
 
       <Translator />
 
-      <footer className="mx-auto mt-16 max-w-3xl text-center text-xs text-muted-foreground">
-        Made with 🌸 — practice a sentence a day, fighting! 화이팅!
+      <footer className="mx-auto mt-16 max-w-3xl space-y-2 text-center text-xs text-muted-foreground">
+        <p>Made with 🌸 — practice a sentence a day, fighting! 화이팅!</p>
+        <p>
+          Made by{" "}
+          <a
+            href="https://www.instagram.com/tokki_easykorean?igsh=ZG04YWNqcTYzZHBo"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-semibold text-primary hover:underline"
+          >
+            @tokki_easykorean
+          </a>
+        </p>
       </footer>
       <Toaster />
     </main>
