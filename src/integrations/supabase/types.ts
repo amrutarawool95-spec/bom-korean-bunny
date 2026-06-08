@@ -14,7 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      coupons: {
+        Row: {
+          code: string
+          created_at: string
+          used_at: string | null
+          used_by: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Relationships: []
+      }
+      user_premium: {
+        Row: {
+          granted_at: string
+          granted_via: string | null
+          is_premium: boolean
+          user_id: string
+        }
+        Insert: {
+          granted_at?: string
+          granted_via?: string | null
+          is_premium?: boolean
+          user_id: string
+        }
+        Update: {
+          granted_at?: string
+          granted_via?: string | null
+          is_premium?: boolean
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
