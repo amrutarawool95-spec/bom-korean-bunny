@@ -5,13 +5,18 @@ import { translateToKorean, explainKorean } from "@/lib/korean.functions";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Sparkles, Loader2 } from "lucide-react";
+import { Sparkles, Loader2, Volume2, Crown } from "lucide-react";
 import { GrammarBreakdown } from "./GrammarBreakdown";
+import { PremiumDialog } from "./PremiumDialog";
+import { usePremium, speakKorean } from "@/lib/premium";
 
 export function Translator() {
   const [input, setInput] = useState("");
+  const [premiumOpen, setPremiumOpen] = useState(false);
+  const premium = usePremium();
   const translateFn = useServerFn(translateToKorean);
   const explainFn = useServerFn(explainKorean);
+
 
   const translate = useMutation({
     mutationFn: (text: string) => translateFn({ data: { text } }),
