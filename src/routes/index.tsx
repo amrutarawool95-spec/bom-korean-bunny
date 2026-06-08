@@ -1,6 +1,12 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Translator } from "@/components/Translator";
 import { Toaster } from "@/components/ui/sonner";
+import { Button } from "@/components/ui/button";
+import { useAuthUser } from "@/lib/premium";
+import { supabase } from "@/integrations/supabase/client";
+import { LogIn, LogOut } from "lucide-react";
+import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -23,8 +29,48 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
+  const { user } = useAuthUser();
+  const navigate = useNavigate();
+  const qc = useQueryClient();
+
+  const signOut = async () => {
+    await qc.cancelQueries();
+    qc.clear();
+    await supabase.auth.signOut();
+    toast.success("Signed out");
+    navigate({ to: "/" });
+  };
+
   return (
-    <main className="min-h-screen px-4 py-10 sm:py-16">
+    <main className="min-h-screen px-4 py-8 sm:py-12">
+      <div className="mx-auto mb-6 flex max-w-3xl items-center justify-end gap-2">
+        {user ? (
+          <>
+            <span className="hidden text-xs text-muted-foreground sm:inline">
+              {user.email}
+            </span>
+            <Button
+              onClick={signOut}
+              variant="outline"
+              size="sm"
+              className="rounded-full"
+            >
+              <LogOut className="mr-1.5 h-3.5 w-3.5" /> Sign out
+            </Button>
+          </>
+        ) : (
+          <Button
+            asChild
+            size="sm"
+            className="rounded-full bg-primary text-primary-foreground hover:bg-primary/90"
+          >
+            <Link to="/auth">
+              <LogIn className="mr-1.5 h-3.5 w-3.5" /> Sign in
+            </Link>
+          </Button>
+        )}
+      </div>
+
       <header className="mx-auto mb-10 max-w-3xl text-center">
         <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-card/70 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-primary ring-1 ring-border backdrop-blur-sm">
           <span>🌸</span> Bom · 봄 · Spring of Korean

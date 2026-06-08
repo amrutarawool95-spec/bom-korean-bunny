@@ -13,7 +13,7 @@ import { usePremium, speakKorean } from "@/lib/premium";
 export function Translator() {
   const [input, setInput] = useState("");
   const [premiumOpen, setPremiumOpen] = useState(false);
-  const premium = usePremium();
+  const { isPremium: premium } = usePremium();
   const translateFn = useServerFn(translateToKorean);
   const explainFn = useServerFn(explainKorean);
 
