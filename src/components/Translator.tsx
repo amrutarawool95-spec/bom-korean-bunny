@@ -141,6 +141,8 @@ export function Translator() {
           </div>
         )}
       </div>
+      <PremiumDialog open={premiumOpen} onOpenChange={setPremiumOpen} />
     </section>
   );
 }
+
