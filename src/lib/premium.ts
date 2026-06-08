@@ -1,30 +1,45 @@
 import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { supabase } from "@/integrations/supabase/client";
+import { getMyPremium } from "./premium.functions";
 
-const KEY = "bom_premium_v1";
-
-export function isPremium(): boolean {
-  if (typeof window === "undefined") return false;
-  return localStorage.getItem(KEY) === "true";
-}
-
-export function setPremium(v: boolean) {
-  localStorage.setItem(KEY, v ? "true" : "false");
-  window.dispatchEvent(new Event("bom-premium-change"));
+export function useAuthUser() {
+  const [user, setUser] = useState<{ id: string; email?: string | null } | null>(null);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    let mounted = true;
+    supabase.auth.getSession().then(({ data }) => {
+      if (!mounted) return;
+      setUser(data.session?.user ? { id: data.session.user.id, email: data.session.user.email } : null);
+      setLoading(false);
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
+      setUser(session?.user ? { id: session.user.id, email: session.user.email } : null);
+    });
+    return () => {
+      mounted = false;
+      sub.subscription.unsubscribe();
+    };
+  }, []);
+  return { user, loading };
 }
 
 export function usePremium() {
-  const [premium, setP] = useState(false);
-  useEffect(() => {
-    setP(isPremium());
-    const h = () => setP(isPremium());
-    window.addEventListener("bom-premium-change", h);
-    window.addEventListener("storage", h);
-    return () => {
-      window.removeEventListener("bom-premium-change", h);
-      window.removeEventListener("storage", h);
-    };
-  }, []);
-  return premium;
+  const { user, loading } = useAuthUser();
+  const getMyPremiumFn = useServerFn(getMyPremium);
+  const q = useQuery({
+    queryKey: ["my-premium", user?.id ?? "anon"],
+    queryFn: () => getMyPremiumFn(),
+    enabled: !!user,
+    staleTime: 30_000,
+  });
+  return {
+    user,
+    authLoading: loading,
+    isPremium: !!q.data?.isPremium,
+    isLoading: q.isLoading,
+  };
 }
 
 export function speakKorean(text: string) {
