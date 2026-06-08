@@ -80,7 +80,7 @@ export function Translator() {
               </p>
             )}
 
-            <div className="mt-5 flex items-center gap-3">
+            <div className="mt-5 flex flex-wrap items-center gap-3">
               <button
                 onClick={() => explain.mutate()}
                 disabled={explain.isPending}
@@ -92,7 +92,50 @@ export function Translator() {
                 </span>
                 {explain.isPending ? "Bom-Bunny is thinking…" : "Explain this sentence"}
               </button>
+
+              <button
+                onClick={() => {
+                  if (!premium) {
+                    setPremiumOpen(true);
+                    return;
+                  }
+                  try {
+                    speakKorean(translate.data!.korean);
+                  } catch (e) {
+                    toast.error((e as Error).message);
+                  }
+                }}
+                aria-label={premium ? "Play Korean pronunciation" : "Unlock pronunciation (Premium)"}
+                className={
+                  premium
+                    ? "group inline-flex items-center gap-2 rounded-full bg-card px-4 py-2 text-sm font-medium text-foreground shadow-sm ring-1 ring-border transition hover:bg-accent hover:text-accent-foreground hover:ring-accent"
+                    : "group relative inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-primary to-accent px-4 py-2 text-sm font-semibold text-primary-foreground shadow-[var(--shadow-soft)] transition hover:scale-[1.03]"
+                }
+              >
+                {premium ? (
+                  <>
+                    <Volume2 className="h-4 w-4" /> Hear it in Korean
+                  </>
+                ) : (
+                  <>
+                    <Crown className="h-4 w-4" /> Hear it in Korean
+                    <span className="ml-1 rounded-full bg-white/25 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">
+                      Premium
+                    </span>
+                  </>
+                )}
+              </button>
             </div>
+
+            {!premium && (
+              <p className="mt-3 text-xs text-muted-foreground">
+                🔒 Unlock native Korean pronunciation for a one-time <b>$2</b> —{" "}
+                <button onClick={() => setPremiumOpen(true)} className="font-semibold text-primary underline-offset-2 hover:underline">
+                  see what's inside
+                </button>
+                .
+              </p>
+            )}
 
             {explain.data && <GrammarBreakdown data={explain.data} />}
           </div>
