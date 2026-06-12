@@ -96,7 +96,7 @@ export function PremiumDialog({ open, onOpenChange }: { open: boolean; onOpenCha
         {/* Step 1: Pay */}
         <div className="mt-4 rounded-2xl bg-card p-4 ring-1 ring-border">
           <p className="text-center font-display text-sm font-bold text-foreground">
-            Step 1 · Pay $2 with PayPal
+            Step 1 · Pay $2.99 with PayPal
           </p>
           <div className="mt-3 flex justify-center">
             <img
