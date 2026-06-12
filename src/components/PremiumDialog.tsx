@@ -37,6 +37,10 @@ export function PremiumDialog({ open, onOpenChange }: { open: boolean; onOpenCha
   const onRedeem = (e: React.FormEvent) => {
     e.preventDefault();
     if (!code.trim()) return;
+    if (!user) {
+      toast.error("Please sign in first to redeem your coupon.");
+      return;
+    }
     redeem.mutate(code.trim());
   };
 
@@ -115,31 +119,31 @@ export function PremiumDialog({ open, onOpenChange }: { open: boolean; onOpenCha
           <p className="flex items-center justify-center gap-2 text-center font-display text-sm font-bold text-foreground">
             <Ticket className="h-4 w-4 text-primary" /> Have a coupon code?
           </p>
-          {!user ? (
-            <p className="mt-3 text-center text-xs text-muted-foreground">
+          <form onSubmit={onRedeem} className="mt-3 flex gap-2">
+            <Input
+              value={code}
+              onChange={(e) => setCode(e.target.value.toUpperCase())}
+              placeholder="ENTER CODE"
+              maxLength={32}
+              className="rounded-full bg-petal text-center font-mono uppercase tracking-widest"
+              autoComplete="off"
+            />
+            <Button
+              type="submit"
+              disabled={redeem.isPending || !code.trim()}
+              className="rounded-full bg-primary font-semibold text-primary-foreground hover:bg-primary/90"
+            >
+              {redeem.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Redeem"}
+            </Button>
+          </form>
+          {!user && (
+            <p className="mt-2 text-center text-xs text-muted-foreground">
+              You'll need to{" "}
               <Link to="/auth" className="font-semibold text-primary hover:underline">
-                Sign in or create an account
+                sign in
               </Link>{" "}
-              to redeem your coupon.
+              to redeem — it takes a second.
             </p>
-          ) : (
-            <form onSubmit={onRedeem} className="mt-3 flex gap-2">
-              <Input
-                value={code}
-                onChange={(e) => setCode(e.target.value.toUpperCase())}
-                placeholder="ENTER CODE"
-                maxLength={32}
-                className="rounded-full bg-petal text-center font-mono uppercase tracking-widest"
-                autoComplete="off"
-              />
-              <Button
-                type="submit"
-                disabled={redeem.isPending || !code.trim()}
-                className="rounded-full bg-primary font-semibold text-primary-foreground hover:bg-primary/90"
-              >
-                {redeem.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Redeem"}
-              </Button>
-            </form>
           )}
         </div>
 
