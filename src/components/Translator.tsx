@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation } from "@tanstack/react-query";
-import { translateToKorean, explainKorean } from "@/lib/korean.functions";
+import { translateToKorean, explainKorean, speechStyles } from "@/lib/korean.functions";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
@@ -10,13 +10,22 @@ import { GrammarBreakdown } from "./GrammarBreakdown";
 import { PremiumDialog } from "./PremiumDialog";
 import { usePremium, speakKorean } from "@/lib/premium";
 
+type StyleEntry = { korean: string; romanization?: string; note?: string } | null;
+type Styles = { formal: StyleEntry; polite: StyleEntry; casual: StyleEntry };
+
+const STYLE_META: Record<keyof Styles, { label: string; emoji: string; tag: string }> = {
+  formal: { label: "Formal", emoji: "🎩", tag: "하십시오체 · business, elders" },
+  polite: { label: "Polite", emoji: "🌸", tag: "해요체 · everyday safe" },
+  casual: { label: "Casual", emoji: "💬", tag: "반말 · close friends" },
+};
+
 export function Translator() {
   const [input, setInput] = useState("");
   const [premiumOpen, setPremiumOpen] = useState(false);
   const { isPremium: premium } = usePremium();
   const translateFn = useServerFn(translateToKorean);
   const explainFn = useServerFn(explainKorean);
-
+  const stylesFn = useServerFn(speechStyles);
 
   const translate = useMutation({
     mutationFn: (text: string) => translateFn({ data: { text } }),
@@ -31,10 +40,42 @@ export function Translator() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const styles = useMutation({
+    mutationFn: () =>
+      stylesFn({
+        data: { english: input, korean: translate.data?.korean ?? "" },
+      }) as Promise<Styles>,
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const handleTranslate = () => {
     if (!input.trim()) return;
     explain.reset();
+    styles.reset();
     translate.mutate(input.trim());
+  };
+
+  const handleHear = () => {
+    if (!premium) {
+      setPremiumOpen(true);
+      return;
+    }
+    // Speak the main translation immediately, and fetch style variants
+    try {
+      speakKorean(translate.data!.korean);
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
+    if (!styles.data && !styles.isPending) styles.mutate();
+  };
+
+  const speak = (text?: string) => {
+    if (!text) return;
+    try {
+      speakKorean(text);
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
   };
 
   return (
@@ -71,7 +112,10 @@ export function Translator() {
 
         {translate.data && (
           <div className="mt-8 rounded-2xl bg-gradient-to-br from-petal to-blossom/40 p-6">
-            <p className="font-display text-2xl font-semibold text-foreground sm:text-3xl" style={{ fontFamily: "'Noto Sans KR', sans-serif" }}>
+            <p
+              className="font-display text-2xl font-semibold text-foreground sm:text-3xl"
+              style={{ fontFamily: "'Noto Sans KR', sans-serif" }}
+            >
               {translate.data.korean}
             </p>
             {translate.data.romanization && (
@@ -94,17 +138,7 @@ export function Translator() {
               </button>
 
               <button
-                onClick={() => {
-                  if (!premium) {
-                    setPremiumOpen(true);
-                    return;
-                  }
-                  try {
-                    speakKorean(translate.data!.korean);
-                  } catch (e) {
-                    toast.error((e as Error).message);
-                  }
-                }}
+                onClick={handleHear}
                 aria-label={premium ? "Play Korean pronunciation" : "Unlock pronunciation (Premium)"}
                 className={
                   premium
@@ -129,12 +163,73 @@ export function Translator() {
 
             {!premium && (
               <p className="mt-3 text-xs text-muted-foreground">
-                🔒 Unlock native Korean pronunciation for a one-time <b>$2</b> —{" "}
-                <button onClick={() => setPremiumOpen(true)} className="font-semibold text-primary underline-offset-2 hover:underline">
+                🔒 Unlock native Korean pronunciation + formal/polite/casual versions for a one-time{" "}
+                <b>$2.99</b> —{" "}
+                <button
+                  onClick={() => setPremiumOpen(true)}
+                  className="font-semibold text-primary underline-offset-2 hover:underline"
+                >
                   see what's inside
                 </button>
                 .
               </p>
+            )}
+
+            {premium && (styles.isPending || styles.data) && (
+              <div className="mt-6 space-y-3">
+                <p className="font-display text-sm font-bold text-foreground/80">
+                  Say it three ways · pick the vibe that fits 💕
+                </p>
+                {styles.isPending && !styles.data && (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Loader2 className="h-4 w-4 animate-spin" /> Crafting formal, polite & casual versions…
+                  </div>
+                )}
+                {styles.data &&
+                  (Object.keys(STYLE_META) as Array<keyof Styles>).map((key) => {
+                    const entry = styles.data?.[key];
+                    if (!entry?.korean) return null;
+                    const meta = STYLE_META[key];
+                    return (
+                      <div
+                        key={key}
+                        className="rounded-2xl bg-card p-4 ring-1 ring-border"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary">
+                              <span>{meta.emoji}</span> {meta.label}
+                              <span className="rounded-full bg-petal px-2 py-0.5 text-[10px] font-medium normal-case tracking-normal text-muted-foreground">
+                                {meta.tag}
+                              </span>
+                            </p>
+                            <p
+                              className="mt-2 font-display text-lg font-semibold text-foreground sm:text-xl"
+                              style={{ fontFamily: "'Noto Sans KR', sans-serif" }}
+                            >
+                              {entry.korean}
+                            </p>
+                            {entry.romanization && (
+                              <p className="mt-1 text-xs italic text-muted-foreground">
+                                {entry.romanization}
+                              </p>
+                            )}
+                            {entry.note && (
+                              <p className="mt-1 text-xs text-foreground/70">💡 {entry.note}</p>
+                            )}
+                          </div>
+                          <button
+                            onClick={() => speak(entry.korean)}
+                            aria-label={`Hear ${meta.label} version`}
+                            className="shrink-0 rounded-full bg-primary/15 p-2 text-primary transition hover:bg-primary hover:text-primary-foreground"
+                          >
+                            <Volume2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
             )}
 
             {explain.data && <GrammarBreakdown data={explain.data} />}
@@ -145,4 +240,3 @@ export function Translator() {
     </section>
   );
 }
-

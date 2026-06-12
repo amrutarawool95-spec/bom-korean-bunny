@@ -52,37 +52,45 @@ export function PremiumDialog({ open, onOpenChange }: { open: boolean; onOpenCha
             <Crown className="h-7 w-7" />
           </div>
           <DialogTitle className="font-display text-2xl font-extrabold">
-            Bom Premium <span className="text-primary">🌸</span>
+            Bom Premium <span className="text-primary">🍓</span>
           </DialogTitle>
           <DialogDescription className="text-base text-foreground/80">
-            Hear every sentence spoken in natural Korean — train your ear while you read.
+            Stop sounding like a textbook. Speak Korean the way <i>real</i> Koreans do — in every situation.
           </DialogDescription>
         </DialogHeader>
 
         <ul className="my-4 space-y-2 text-sm">
           <li className="flex items-start gap-3 rounded-2xl bg-card/70 p-3 ring-1 ring-border">
             <Volume2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-            <span><b>Pronunciation playback</b> — hear any translation in clear, native-paced Korean.</span>
+            <span>
+              <b>Native-paced pronunciation</b> — hear every sentence spoken clearly so you train your ear like a K-drama binge, but smarter.
+            </span>
           </li>
           <li className="flex items-start gap-3 rounded-2xl bg-card/70 p-3 ring-1 ring-border">
             <Sparkles className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-            <span><b>Listen & repeat</b> — shadowing builds your accent 3× faster.</span>
+            <span>
+              <b>3-in-1 sentence styles</b> — get the same sentence in <b>formal</b>, <b>polite</b>, and <b>casual</b> Korean so you never embarrass yourself in front of elders, bosses, or new friends.
+            </span>
           </li>
           <li className="flex items-start gap-3 rounded-2xl bg-card/70 p-3 ring-1 ring-border">
             <Zap className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-            <span><b>Unlimited plays</b> — replay any sentence as many times as you want.</span>
+            <span>
+              <b>Listen, shadow & repeat</b> — replay any version unlimited times. Learners who shadow build a real Korean accent up to 3× faster.
+            </span>
           </li>
           <li className="flex items-start gap-3 rounded-2xl bg-card/70 p-3 ring-1 ring-border">
             <Heart className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-            <span><b>Support Tokki</b> — keep this little app sweet and ad-free.</span>
+            <span>
+              <b>Forever yours · support Tokki</b> — one tiny payment keeps Bom sweet, ad-free, and growing with new features.
+            </span>
           </li>
         </ul>
 
         <div className="rounded-2xl bg-card p-4 text-center ring-1 ring-border">
           <p className="font-display text-3xl font-extrabold text-foreground">
-            $2 <span className="text-base font-medium text-muted-foreground">/ one-time</span>
+            $2.99 <span className="text-base font-medium text-muted-foreground">/ one-time</span>
           </p>
-          <p className="mt-1 text-xs text-muted-foreground">Less than a bubble tea. Yours forever. 🧋</p>
+          <p className="mt-1 text-xs text-muted-foreground">Cheaper than a latte. Yours forever. 🧋</p>
         </div>
 
         {/* Step 1: Pay */}
