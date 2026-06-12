@@ -35,7 +35,6 @@ export function PremiumDialog({ open, onOpenChange }: { open: boolean; onOpenCha
   });
 
   const onRedeem = (e: React.FormEvent) => {
-  const onRedeem = (e: React.FormEvent) => {
     e.preventDefault();
     if (!code.trim()) return;
     if (!user) {
