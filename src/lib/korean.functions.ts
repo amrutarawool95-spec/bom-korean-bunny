@@ -89,3 +89,44 @@ Keep it warm, concise, and beginner-friendly. Return ONLY JSON, no markdown.`,
       return { tokens: [], structure: "", grammar: [], tip: content };
     }
   });
+
+export const speechStyles = createServerFn({ method: "POST" })
+  .inputValidator(
+    z.object({
+      english: z.string().min(1).max(2000),
+      korean: z.string().min(1).max(2000),
+    }),
+  )
+  .handler(async ({ data }) => {
+    const json = await callAI({
+      model: MODEL,
+      messages: [
+        {
+          role: "system",
+          content: `You rewrite a Korean sentence into three natural speech levels for the SAME meaning.
+Return ONLY JSON:
+{
+  "formal":   { "korean": "...", "romanization": "...", "note": "When/with whom to use it (1 short line)" },
+  "polite":   { "korean": "...", "romanization": "...", "note": "..." },
+  "casual":   { "korean": "...", "romanization": "...", "note": "..." }
+}
+Rules:
+- formal = 하십시오체 (very polite, presentations, strangers, elders, business)
+- polite = 해요체 (everyday polite, coworkers, new friends, shops)
+- casual = 반말 (close friends, younger siblings, same-age close)
+Keep meaning identical. No markdown.`,
+        },
+        {
+          role: "user",
+          content: `English: ${data.english}\nKorean (reference): ${data.korean}`,
+        },
+      ],
+      response_format: { type: "json_object" },
+    });
+    const content: string = json.choices?.[0]?.message?.content ?? "{}";
+    try {
+      return JSON.parse(content);
+    } catch {
+      return { formal: null, polite: null, casual: null };
+    }
+  });
