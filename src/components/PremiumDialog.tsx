@@ -35,8 +35,13 @@ export function PremiumDialog({ open, onOpenChange }: { open: boolean; onOpenCha
   });
 
   const onRedeem = (e: React.FormEvent) => {
+  const onRedeem = (e: React.FormEvent) => {
     e.preventDefault();
     if (!code.trim()) return;
+    if (!user) {
+      toast.error("Please sign in first to redeem your coupon.");
+      return;
+    }
     redeem.mutate(code.trim());
   };
 
