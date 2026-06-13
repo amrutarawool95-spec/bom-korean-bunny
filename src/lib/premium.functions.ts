@@ -23,10 +23,13 @@ export const redeemCoupon = createServerFn({ method: "POST" })
     return { code };
   })
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
+    const { userId } = context;
+    // Use the admin client for trusted writes; the caller is already
+    // authenticated via requireSupabaseAuth middleware.
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     // Check if user is already premium
-    const { data: existing } = await supabase
+    const { data: existing } = await supabaseAdmin
       .from("user_premium")
       .select("is_premium")
       .eq("user_id", userId)
@@ -35,8 +38,8 @@ export const redeemCoupon = createServerFn({ method: "POST" })
       return { ok: true, alreadyPremium: true };
     }
 
-    // Atomically claim the coupon: RLS only allows updating rows where used_by IS NULL.
-    const { data: claimed, error: claimErr } = await supabase
+    // Atomically claim the coupon: only succeeds if it's unused.
+    const { data: claimed, error: claimErr } = await supabaseAdmin
       .from("coupons")
       .update({ used_by: userId, used_at: new Date().toISOString() })
       .eq("code", data.code)
@@ -49,7 +52,7 @@ export const redeemCoupon = createServerFn({ method: "POST" })
     }
 
     // Grant premium
-    const { error: upsertErr } = await supabase
+    const { error: upsertErr } = await supabaseAdmin
       .from("user_premium")
       .upsert(
         { user_id: userId, is_premium: true, granted_via: `coupon:${data.code}` },
