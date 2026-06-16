@@ -60,9 +60,13 @@ export function Translator() {
       setPremiumOpen(true);
       return;
     }
-    // Speak the main translation immediately, and fetch style variants
+    const korean = translate.data?.korean?.trim();
+    if (!korean) {
+      toast.error("Translate a sentence first 🌸");
+      return;
+    }
     try {
-      speakKorean(translate.data!.korean);
+      speakKorean(korean);
     } catch (e) {
       toast.error((e as Error).message);
     }
