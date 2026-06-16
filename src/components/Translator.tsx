@@ -33,10 +33,13 @@ export function Translator() {
   });
 
   const explain = useMutation({
-    mutationFn: () =>
-      explainFn({
-        data: { english: input, korean: translate.data?.korean ?? "" },
-      }),
+    mutationFn: () => {
+      const korean = translate.data?.korean?.trim();
+      if (!korean) throw new Error("Translate a sentence first 🌸");
+      return explainFn({
+        data: { english: input.trim(), korean },
+      });
+    },
     onError: (e: Error) => toast.error(e.message),
   });
 
