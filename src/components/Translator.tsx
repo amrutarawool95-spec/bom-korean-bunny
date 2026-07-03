@@ -63,10 +63,22 @@ export function Translator() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const tenses = useMutation({
+    mutationFn: () => {
+      const korean = translate.data?.korean?.trim();
+      if (!korean) throw new Error("Translate a sentence first 🌸");
+      return tensesFn({
+        data: { english: input.trim(), korean },
+      }) as Promise<Tenses>;
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const handleTranslate = () => {
     if (!input.trim()) return;
     explain.reset();
     styles.reset();
+    tenses.reset();
     translate.mutate(input.trim());
   };
 
