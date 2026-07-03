@@ -12,11 +12,19 @@ import { usePremium, speakKorean } from "@/lib/premium";
 
 type StyleEntry = { korean: string; romanization?: string; note?: string } | null;
 type Styles = { formal: StyleEntry; polite: StyleEntry; casual: StyleEntry };
+type TenseEntry = { korean: string; romanization?: string; english?: string; note?: string } | null;
+type Tenses = { past: TenseEntry; present: TenseEntry; future: TenseEntry };
 
 const STYLE_META: Record<keyof Styles, { label: string; emoji: string; tag: string }> = {
   formal: { label: "Formal", emoji: "🎩", tag: "하십시오체 · business, elders" },
   polite: { label: "Polite", emoji: "🌸", tag: "해요체 · everyday safe" },
   casual: { label: "Casual", emoji: "💬", tag: "반말 · close friends" },
+};
+
+const TENSE_META: Record<keyof Tenses, { label: string; emoji: string; tag: string }> = {
+  past: { label: "Past", emoji: "⏪", tag: "-았/었어요" },
+  present: { label: "Present", emoji: "🎯", tag: "-아/어요" },
+  future: { label: "Future", emoji: "⏩", tag: "-(으)ㄹ 거예요" },
 };
 
 export function Translator() {
