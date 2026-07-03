@@ -98,6 +98,7 @@ export function Translator() {
       toast.error((e as Error).message);
     }
     if (!styles.data && !styles.isPending) styles.mutate();
+    if (!tenses.data && !tenses.isPending) tenses.mutate();
   };
 
   const speak = (text?: string) => {
