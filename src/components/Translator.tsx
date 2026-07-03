@@ -34,6 +34,7 @@ export function Translator() {
   const translateFn = useServerFn(translateToKorean);
   const explainFn = useServerFn(explainKorean);
   const stylesFn = useServerFn(speechStyles);
+  const tensesFn = useServerFn(tenseForms);
 
   const translate = useMutation({
     mutationFn: (text: string) => translateFn({ data: { text } }),
