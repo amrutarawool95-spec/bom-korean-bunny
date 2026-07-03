@@ -130,3 +130,40 @@ Keep meaning identical. No markdown.`,
       return { formal: null, polite: null, casual: null };
     }
   });
+
+export const tenseForms = createServerFn({ method: "POST" })
+  .inputValidator(
+    z.object({
+      english: z.string().min(1).max(2000),
+      korean: z.string().min(1).max(2000),
+    }),
+  )
+  .handler(async ({ data }) => {
+    const json = await callAI({
+      model: MODEL,
+      messages: [
+        {
+          role: "system",
+          content: `You rewrite a Korean sentence into three tenses (past, present, future) keeping the same subject and meaning. Use natural polite 해요체.
+Return ONLY JSON:
+{
+  "past":    { "korean": "...", "romanization": "...", "english": "English version in past tense", "note": "Grammar hint e.g. -았/었어요 past ending" },
+  "present": { "korean": "...", "romanization": "...", "english": "English version in present tense", "note": "e.g. -아/어요 present ending" },
+  "future":  { "korean": "...", "romanization": "...", "english": "English version in future tense", "note": "e.g. -(으)ㄹ 거예요 future ending" }
+}
+No markdown.`,
+        },
+        {
+          role: "user",
+          content: `English: ${data.english}\nKorean (reference): ${data.korean}`,
+        },
+      ],
+      response_format: { type: "json_object" },
+    });
+    const content: string = json.choices?.[0]?.message?.content ?? "{}";
+    try {
+      return JSON.parse(content);
+    } catch {
+      return { past: null, present: null, future: null };
+    }
+  });

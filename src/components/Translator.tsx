@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation } from "@tanstack/react-query";
-import { translateToKorean, explainKorean, speechStyles } from "@/lib/korean.functions";
+import { translateToKorean, explainKorean, speechStyles, tenseForms } from "@/lib/korean.functions";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
@@ -12,11 +12,19 @@ import { usePremium, speakKorean } from "@/lib/premium";
 
 type StyleEntry = { korean: string; romanization?: string; note?: string } | null;
 type Styles = { formal: StyleEntry; polite: StyleEntry; casual: StyleEntry };
+type TenseEntry = { korean: string; romanization?: string; english?: string; note?: string } | null;
+type Tenses = { past: TenseEntry; present: TenseEntry; future: TenseEntry };
 
 const STYLE_META: Record<keyof Styles, { label: string; emoji: string; tag: string }> = {
   formal: { label: "Formal", emoji: "🎩", tag: "하십시오체 · business, elders" },
   polite: { label: "Polite", emoji: "🌸", tag: "해요체 · everyday safe" },
   casual: { label: "Casual", emoji: "💬", tag: "반말 · close friends" },
+};
+
+const TENSE_META: Record<keyof Tenses, { label: string; emoji: string; tag: string }> = {
+  past: { label: "Past", emoji: "⏪", tag: "-았/었어요" },
+  present: { label: "Present", emoji: "🎯", tag: "-아/어요" },
+  future: { label: "Future", emoji: "⏩", tag: "-(으)ㄹ 거예요" },
 };
 
 export function Translator() {
@@ -26,6 +34,7 @@ export function Translator() {
   const translateFn = useServerFn(translateToKorean);
   const explainFn = useServerFn(explainKorean);
   const stylesFn = useServerFn(speechStyles);
+  const tensesFn = useServerFn(tenseForms);
 
   const translate = useMutation({
     mutationFn: (text: string) => translateFn({ data: { text } }),
@@ -54,10 +63,22 @@ export function Translator() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const tenses = useMutation({
+    mutationFn: () => {
+      const korean = translate.data?.korean?.trim();
+      if (!korean) throw new Error("Translate a sentence first 🌸");
+      return tensesFn({
+        data: { english: input.trim(), korean },
+      }) as Promise<Tenses>;
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const handleTranslate = () => {
     if (!input.trim()) return;
     explain.reset();
     styles.reset();
+    tenses.reset();
     translate.mutate(input.trim());
   };
 
@@ -77,6 +98,7 @@ export function Translator() {
       toast.error((e as Error).message);
     }
     if (!styles.data && !styles.isPending) styles.mutate();
+    if (!tenses.data && !tenses.isPending) tenses.mutate();
   };
 
   const speak = (text?: string) => {
@@ -231,6 +253,63 @@ export function Translator() {
                           <button
                             onClick={() => speak(entry.korean)}
                             aria-label={`Hear ${meta.label} version`}
+                            className="shrink-0 rounded-full bg-primary/15 p-2 text-primary transition hover:bg-primary hover:text-primary-foreground"
+                          >
+                            <Volume2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+            )}
+
+            {premium && (tenses.isPending || tenses.data) && (
+              <div className="mt-6 space-y-3">
+                <p className="font-display text-sm font-bold text-foreground/80">
+                  Learn it in every tense · past, present & future ⏳
+                </p>
+                {tenses.isPending && !tenses.data && (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Loader2 className="h-4 w-4 animate-spin" /> Conjugating past, present & future…
+                  </div>
+                )}
+                {tenses.data &&
+                  (Object.keys(TENSE_META) as Array<keyof Tenses>).map((key) => {
+                    const entry = tenses.data?.[key];
+                    if (!entry?.korean) return null;
+                    const meta = TENSE_META[key];
+                    return (
+                      <div key={key} className="rounded-2xl bg-card p-4 ring-1 ring-border">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary">
+                              <span>{meta.emoji}</span> {meta.label}
+                              <span className="rounded-full bg-petal px-2 py-0.5 text-[10px] font-medium normal-case tracking-normal text-muted-foreground">
+                                {meta.tag}
+                              </span>
+                            </p>
+                            <p
+                              className="mt-2 font-display text-lg font-semibold text-foreground sm:text-xl"
+                              style={{ fontFamily: "'Noto Sans KR', sans-serif" }}
+                            >
+                              {entry.korean}
+                            </p>
+                            {entry.romanization && (
+                              <p className="mt-1 text-xs italic text-muted-foreground">
+                                {entry.romanization}
+                              </p>
+                            )}
+                            {entry.english && (
+                              <p className="mt-1 text-xs text-foreground/80">“{entry.english}”</p>
+                            )}
+                            {entry.note && (
+                              <p className="mt-1 text-xs text-foreground/70">💡 {entry.note}</p>
+                            )}
+                          </div>
+                          <button
+                            onClick={() => speak(entry.korean)}
+                            aria-label={`Hear ${meta.label} tense`}
                             className="shrink-0 rounded-full bg-primary/15 p-2 text-primary transition hover:bg-primary hover:text-primary-foreground"
                           >
                             <Volume2 className="h-4 w-4" />
