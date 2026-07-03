@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation } from "@tanstack/react-query";
-import { translateToKorean, explainKorean, speechStyles } from "@/lib/korean.functions";
+import { translateToKorean, explainKorean, speechStyles, tenseForms } from "@/lib/korean.functions";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
