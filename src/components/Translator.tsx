@@ -83,7 +83,6 @@ export function Translator() {
       onSuccess: (res) => {
         if (premium && res?.korean?.trim()) {
           styles.mutate();
-          tenses.mutate();
         }
       },
     });
