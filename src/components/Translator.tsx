@@ -79,7 +79,14 @@ export function Translator() {
     explain.reset();
     styles.reset();
     tenses.reset();
-    translate.mutate(input.trim());
+    translate.mutate(input.trim(), {
+      onSuccess: (res) => {
+        if (premium && res?.korean?.trim()) {
+          styles.mutate();
+          tenses.mutate();
+        }
+      },
+    });
   };
 
   const handleHear = () => {
