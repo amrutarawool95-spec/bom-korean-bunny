@@ -83,7 +83,6 @@ export function Translator() {
       onSuccess: (res) => {
         if (premium && res?.korean?.trim()) {
           styles.mutate();
-          tenses.mutate();
         }
       },
     });
@@ -105,7 +104,6 @@ export function Translator() {
       toast.error((e as Error).message);
     }
     if (!styles.data && !styles.isPending) styles.mutate();
-    if (!tenses.data && !tenses.isPending) tenses.mutate();
   };
 
   const speak = (text?: string) => {
@@ -271,62 +269,92 @@ export function Translator() {
               </div>
             )}
 
-            {premium && (tenses.isPending || tenses.data) && (
-              <div className="mt-6 space-y-3">
-                <p className="font-display text-sm font-bold text-foreground/80">
-                  Learn it in every tense · past, present & future ⏳
-                </p>
-                {tenses.isPending && !tenses.data && (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Loader2 className="h-4 w-4 animate-spin" /> Conjugating past, present & future…
+            {premium && translate.data?.korean && (() => {
+              const hasAnyTense =
+                !!tenses.data &&
+                (Object.keys(TENSE_META) as Array<keyof Tenses>).some(
+                  (k) => tenses.data?.[k]?.korean,
+                );
+              return (
+                <div className="mt-6 space-y-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="font-display text-sm font-bold text-foreground/80">
+                      Learn it in every tense · past, present & future ⏳
+                    </p>
+                    <button
+                      onClick={() => tenses.mutate()}
+                      disabled={tenses.isPending}
+                      aria-label={hasAnyTense ? "Reload tenses" : "Load tenses"}
+                      title={hasAnyTense ? "Reload tenses" : "Load tenses"}
+                      className="group inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blossom to-primary/70 text-primary-foreground shadow-[var(--shadow-soft)] ring-2 ring-white/60 transition hover:scale-110 active:scale-95 disabled:opacity-60"
+                    >
+                      {tenses.isPending ? (
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                      ) : (
+                        <span className="text-xl leading-none">⏳</span>
+                      )}
+                    </button>
                   </div>
-                )}
-                {tenses.data &&
-                  (Object.keys(TENSE_META) as Array<keyof Tenses>).map((key) => {
-                    const entry = tenses.data?.[key];
-                    if (!entry?.korean) return null;
-                    const meta = TENSE_META[key];
-                    return (
-                      <div key={key} className="rounded-2xl bg-card p-4 ring-1 ring-border">
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="min-w-0">
-                            <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary">
-                              <span>{meta.emoji}</span> {meta.label}
-                              <span className="rounded-full bg-petal px-2 py-0.5 text-[10px] font-medium normal-case tracking-normal text-muted-foreground">
-                                {meta.tag}
-                              </span>
-                            </p>
-                            <p
-                              className="mt-2 font-display text-lg font-semibold text-foreground sm:text-xl"
-                              style={{ fontFamily: "'Noto Sans KR', sans-serif" }}
-                            >
-                              {entry.korean}
-                            </p>
-                            {entry.romanization && (
-                              <p className="mt-1 text-xs italic text-muted-foreground">
-                                {entry.romanization}
+
+                  {tenses.isPending && (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Loader2 className="h-4 w-4 animate-spin" /> Conjugating past, present & future…
+                    </div>
+                  )}
+
+                  {!tenses.isPending && !hasAnyTense && (
+                    <p className="text-xs text-muted-foreground">
+                      Tap the pink button to see this sentence in past, present & future tenses ✨
+                    </p>
+                  )}
+
+                  {hasAnyTense &&
+                    (Object.keys(TENSE_META) as Array<keyof Tenses>).map((key) => {
+                      const entry = tenses.data?.[key];
+                      if (!entry?.korean) return null;
+                      const meta = TENSE_META[key];
+                      return (
+                        <div key={key} className="rounded-2xl bg-card p-4 ring-1 ring-border">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary">
+                                <span>{meta.emoji}</span> {meta.label}
+                                <span className="rounded-full bg-petal px-2 py-0.5 text-[10px] font-medium normal-case tracking-normal text-muted-foreground">
+                                  {meta.tag}
+                                </span>
                               </p>
-                            )}
-                            {entry.english && (
-                              <p className="mt-1 text-xs text-foreground/80">“{entry.english}”</p>
-                            )}
-                            {entry.note && (
-                              <p className="mt-1 text-xs text-foreground/70">💡 {entry.note}</p>
-                            )}
+                              <p
+                                className="mt-2 font-display text-lg font-semibold text-foreground sm:text-xl"
+                                style={{ fontFamily: "'Noto Sans KR', sans-serif" }}
+                              >
+                                {entry.korean}
+                              </p>
+                              {entry.romanization && (
+                                <p className="mt-1 text-xs italic text-muted-foreground">
+                                  {entry.romanization}
+                                </p>
+                              )}
+                              {entry.english && (
+                                <p className="mt-1 text-xs text-foreground/80">“{entry.english}”</p>
+                              )}
+                              {entry.note && (
+                                <p className="mt-1 text-xs text-foreground/70">💡 {entry.note}</p>
+                              )}
+                            </div>
+                            <button
+                              onClick={() => speak(entry.korean)}
+                              aria-label={`Hear ${meta.label} tense`}
+                              className="shrink-0 rounded-full bg-primary/15 p-2 text-primary transition hover:bg-primary hover:text-primary-foreground"
+                            >
+                              <Volume2 className="h-4 w-4" />
+                            </button>
                           </div>
-                          <button
-                            onClick={() => speak(entry.korean)}
-                            aria-label={`Hear ${meta.label} tense`}
-                            className="shrink-0 rounded-full bg-primary/15 p-2 text-primary transition hover:bg-primary hover:text-primary-foreground"
-                          >
-                            <Volume2 className="h-4 w-4" />
-                          </button>
                         </div>
-                      </div>
-                    );
-                  })}
-              </div>
-            )}
+                      );
+                    })}
+                </div>
+              );
+            })()}
 
             {explain.data && <GrammarBreakdown data={explain.data} />}
           </div>
